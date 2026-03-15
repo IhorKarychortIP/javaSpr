@@ -1,0 +1,16 @@
+# Збірка Maven
+target/
+*.war
+*.jar
+*.class
+
+# Логи
+*.log
+
+# Папка налаштувань самої IDE (щоб не дублювати)
+.idea/
+*.iml
+.vscode/
+
+# Системні файли Windows
+Thumbs.db
