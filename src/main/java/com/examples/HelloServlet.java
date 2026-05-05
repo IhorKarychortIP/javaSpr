@@ -13,11 +13,6 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,11 +22,7 @@ import java.util.Map;
 public class    HelloServlet extends HttpServlet {
     private Configuration cfg;
 
-    // --- НАЛАШТУВАННЯ MYSQL ---
-    // Важливо: перевірте ім'я бази даних (тут 'my_database')
-    private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306/myapp?serverTimezone=UTC";
-    private static final String DB_USER = "java_user";   // Ваш логін MySQL
-    private static final String DB_PASSWORD = "pass123";
+
 
     @Override
     public void init() throws ServletException {
@@ -83,26 +74,32 @@ public class    HelloServlet extends HttpServlet {
             resp.addCookie(newCookie);
         }
 
-        // --- БЛОК РОБОТИ З БД ---
+        // --- БЛОК РОБОТИ З БД (Через DAO) ---
         List<String> dbData = new ArrayList<>();
         String dbStatus = "Спроба підключення...";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            dbStatus = "Підключення до MySQL успішне!";
+        try {
+            // Ініціалізуємо DAO (він сам візьме з'єднання з пулу)
+            UserDAO userDAO = new UserDAO();
+            dbStatus = "Підключення через DataSource успішне!";
 
-            // Змініть SQL запит під вашу таблицю! Наприклад: SELECT name FROM users
-            // Якщо таблиці ще немає, цей код впаде з помилкою, тому огорніть в try/catch або створіть таблицю
-            String sql = "SELECT 1"; // Простий тест-запит, щоб не ламалося, якщо немає таблиць
+            // 1. Для тесту можемо створити нового користувача
+            // Розкоментуй ці два рядки, якщо хочеш додати запис:
+            // User newUser = new User("Тестовий Юзер", "test@test.com");
+            // userDAO.createUser(newUser);
 
-            try (PreparedStatement statement = conn.prepareStatement(sql);
-                 ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    dbData.add("Test Query Result: " + resultSet.getString(1));
-                }
+            // 2. Отримуємо користувача (наприклад, з id = 1)
+            // Оскільки таблиця може бути порожньою, додамо перевірку
+            User user = userDAO.getUserById(1);
+            if (user != null) {
+                dbData.add("Знайдено: " + user.getName() + " (" + user.getEmail() + ")");
+            } else {
+                dbData.add("Користувача з ID=1 не знайдено в базі.");
             }
-        } catch (SQLException e) {
-            dbStatus = "Помилка MySQL: " + e.getMessage();
-            e.printStackTrace(); // Це піде в логи Tomcat
+
+        } catch (Exception e) { // Ловимо всі помилки, включно з NamingException та SQLException
+            dbStatus = "Помилка роботи з БД: " + e.getMessage();
+            e.printStackTrace();
         }
 
         // --- FreeMarker ---
