@@ -83,13 +83,7 @@ public class    HelloServlet extends HttpServlet {
             UserDAO userDAO = new UserDAO();
             dbStatus = "Підключення через DataSource успішне!";
 
-            // 1. Для тесту можемо створити нового користувача
-            // Розкоментуй ці два рядки, якщо хочеш додати запис:
-            // User newUser = new User("Тестовий Юзер", "test@test.com");
-            // userDAO.createUser(newUser);
 
-            // 2. Отримуємо користувача (наприклад, з id = 1)
-            // Оскільки таблиця може бути порожньою, додамо перевірку
             User user = userDAO.getUserById(1);
             if (user != null) {
                 dbData.add("Знайдено: " + user.getName() + " (" + user.getEmail() + ")");
