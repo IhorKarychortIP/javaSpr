@@ -1,13 +1,31 @@
-package com.examples;
+package com.examples.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
 public class User {
-    public enum Role { PATIENT, DOCTOR }
 
+    public enum Role { PATIENT, DOCTOR, ADMIN }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
+
+    public User() {}
 
     public User(String name, String email, String password, Role role) {
         this.name = name;
@@ -24,7 +42,6 @@ public class User {
         this.role = role;
     }
 
-    // Геттери та сеттери
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getName() { return name; }

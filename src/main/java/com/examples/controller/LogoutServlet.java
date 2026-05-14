@@ -1,4 +1,4 @@
-package com.examples;
+package com.examples.controller;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

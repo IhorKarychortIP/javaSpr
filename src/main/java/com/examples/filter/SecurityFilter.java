@@ -1,4 +1,4 @@
-package com.examples;
+package com.examples.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter("/clinic/*") // Захищаємо всі URL, що починаються з /clinic/
+@WebFilter("/clinic/*")
 public class SecurityFilter implements Filter {
 
     @Override

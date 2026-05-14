@@ -40,9 +40,10 @@
             </div>
             <div class="form-group">
                 <label>Роль:</label>
-                <select name="role">
+                <select name="role" required>
                     <option value="PATIENT">Пацієнт</option>
                     <option value="DOCTOR">Лікар</option>
+                    <option value="ADMIN">Адміністратор</option>
                 </select>
             </div>
             <button type="submit">Зареєструватися</button>

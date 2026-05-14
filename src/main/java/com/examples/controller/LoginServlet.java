@@ -1,11 +1,15 @@
-package com.examples;
+package com.examples.controller;
 
+import com.examples.dao.UserDAO;
+import com.examples.model.User;
+import com.examples.util.TemplateEngine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,8 +20,9 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Рендеримо логін без жодних даних
-        TemplateEngine.render(req, resp, "login.ftl", null);
+        Map<String, Object> data = new HashMap<>();
+        data.put("contextPath", req.getContextPath()); // ДОДАНО
+        TemplateEngine.render(req, resp, "login.ftl", data);
     }
 
     @Override
@@ -32,8 +37,8 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("loggedUser", user);
                 resp.sendRedirect(req.getContextPath() + "/clinic/dashboard");
             } else {
-                // Якщо помилка, передаємо повідомлення у шаблон
                 Map<String, Object> data = new HashMap<>();
+                data.put("contextPath", req.getContextPath());
                 data.put("error", "Невірний email або пароль!");
                 TemplateEngine.render(req, resp, "login.ftl", data);
             }

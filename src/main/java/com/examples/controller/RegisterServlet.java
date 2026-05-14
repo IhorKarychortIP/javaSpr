@@ -1,5 +1,8 @@
-package com.examples;
+package com.examples.controller;
 
+import com.examples.dao.UserDAO;
+import com.examples.model.User;
+import com.examples.util.TemplateEngine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,8 +19,9 @@ public class RegisterServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Віддаємо пусту форму реєстрації
-        TemplateEngine.render(req, resp, "register.ftl", null);
+        Map<String, Object> data = new HashMap<>();
+        data.put("contextPath", req.getContextPath()); // ДОДАНО
+        TemplateEngine.render(req, resp, "register.ftl", data);
     }
 
     @Override
@@ -28,19 +32,15 @@ public class RegisterServlet extends HttpServlet {
         String roleStr = req.getParameter("role");
 
         try {
-            // Перетворюємо рядок на Enum і створюємо користувача
             User.Role role = User.Role.valueOf(roleStr);
             User newUser = new User(name, email, password, role);
 
-            // Зберігаємо в базу (транзакція відпрацює автоматично)
             userDAO.createUser(newUser);
-
-            // Після успішної реєстрації кидаємо на сторінку входу
             resp.sendRedirect(req.getContextPath() + "/login");
 
         } catch (Exception e) {
-            // Якщо такий email вже є в базі, MySQL викине помилку (бо email UNIQUE)
             Map<String, Object> data = new HashMap<>();
+            data.put("contextPath", req.getContextPath()); // ДОДАНО
             data.put("error", "Користувач з таким email вже існує або сталася помилка бази!");
             TemplateEngine.render(req, resp, "register.ftl", data);
         }

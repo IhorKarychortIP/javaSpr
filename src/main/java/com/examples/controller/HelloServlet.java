@@ -1,5 +1,7 @@
-package com.examples;
+package com.examples.controller;
 
+import com.examples.dao.UserDAO;
+import com.examples.model.User;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -26,9 +28,8 @@ public class    HelloServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        // 1. Налаштування FreeMarker
         cfg = new Configuration(Configuration.VERSION_2_3_31);
-        String realPath = getServletContext().getRealPath("/WEB-INF/templates/");
+            String realPath = getServletContext().getRealPath("/WEB-INF/templates/");
         try {
             if (realPath != null) {
                 cfg.setDirectoryForTemplateLoading(new File(realPath));
@@ -39,14 +40,6 @@ public class    HelloServlet extends HttpServlet {
             throw new ServletException("Не вдалося налаштувати папку шаблонів", e);
         }
         cfg.setDefaultEncoding("UTF-8");
-
-        // 2. Явне завантаження драйвера MySQL
-        // Для версії 8.x клас називається com.mysql.cj.jdbc.Driver
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new ServletException("MySQL JDBC Driver not found (перевірте наявність бібліотеки)", e);
-        }
     }
 
     @Override
@@ -74,12 +67,10 @@ public class    HelloServlet extends HttpServlet {
             resp.addCookie(newCookie);
         }
 
-        // --- БЛОК РОБОТИ З БД (Через DAO) ---
         List<String> dbData = new ArrayList<>();
         String dbStatus = "Спроба підключення...";
 
         try {
-            // Ініціалізуємо DAO (він сам візьме з'єднання з пулу)
             UserDAO userDAO = new UserDAO();
             dbStatus = "Підключення через DataSource успішне!";
 
@@ -91,12 +82,11 @@ public class    HelloServlet extends HttpServlet {
                 dbData.add("Користувача з ID=1 не знайдено в базі.");
             }
 
-        } catch (Exception e) { // Ловимо всі помилки, включно з NamingException та SQLException
+        } catch (Exception e) {
             dbStatus = "Помилка роботи з БД: " + e.getMessage();
             e.printStackTrace();
         }
 
-        // --- FreeMarker ---
         Map<String, Object> data = new HashMap<>();
         data.put("message", "Java Servlet + MySQL");
         data.put("paramUser", nameFromParam == null ? "—" : nameFromParam);

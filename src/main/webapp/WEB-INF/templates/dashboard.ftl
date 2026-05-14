@@ -2,65 +2,31 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Панель управління - Поліклініка</title>
+    <title>Особистий кабінет</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f9f9f9; }
-        header { background-color: #2e7d32; color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .container { padding: 30px; max-width: 1000px; margin: 0 auto; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border-left: 5px solid #2196f3; }
-        .role-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-        .badge-doctor { background: #e3f2fd; color: #1976d2; }
-        .badge-patient { background: #f1f8e9; color: #388e3c; }
-
+        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
-        th { background-color: #f5f5f5; color: #333; }
-        .btn-logout { color: #ffebee; text-decoration: none; font-weight: bold; border: 1px solid white; padding: 5px 15px; border-radius: 4px; }
-        .btn-action { text-decoration: none; padding: 5px 10px; border-radius: 3px; font-size: 13px; margin-right: 5px; }
-        .btn-edit { background: #fff3e0; color: #ef6c00; }
-        .btn-delete { background: #ffebee; color: #c62828; }
-        .btn-add { display: inline-block; background: #2e7d32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-bottom: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .btn { padding: 8px 12px; background: #28a745; color: white; border: none; cursor: pointer; text-decoration: none; border-radius: 4px; }
+        .btn-danger { background: #dc3545; }
+        .btn-warning { background: #ffc107; color: black; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-
-<header>
-    <div>
-        <span style="font-size: 20px; font-weight: bold;">🏥 ClinicSystem</span>
-    </div>
-    <div>
-        <span>Вітаємо, <strong>${loggedUser.name}</strong></span>
-        <a href="/logout" class="btn-logout" style="margin-left: 20px;">Вийти</a>
-    </div>
-</header>
-
 <div class="container">
-    <div class="card">
-        <h2>Особистий профіль</h2>
-        <p><strong>Ваш Email:</strong> ${loggedUser.email}</p>
-        <p><strong>Ваша роль:</strong>
-            <span class="role-badge ${ (loggedUser.role == 'DOCTOR')?string('badge-doctor', 'badge-patient') }">
-                ${ (loggedUser.role == 'DOCTOR')?string('Лікар', 'Пацієнт') }
-            </span>
-        </p>
+    <div class="header">
+        <h2>Кабінет: ${loggedUser.name} (${loggedUser.role})</h2>
+        <a href="${contextPath}/logout" class="btn btn-danger">Вийти</a>
     </div>
 
-    <#if loggedUser.role == "DOCTOR">
-        <div class="card" style="border-left-color: #2e7d32;">
-            <h2>Управління базою користувачів (CRUD)</h2>
-            <a href="/clinic/users/add" class="btn-add">+ Додати нового користувача</a>
-
-            <table>
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Ім'я</th>
-                    <th>Email</th>s
-                    <th>Роль</th>
-                    <th>Дії</th>
-                </tr>
-                </thead>
-                <tbody>
+    <#if loggedUser.role == "ADMIN">
+        <h3>Управління користувачами</h3>
+        <table>
+            <tr><th>ID</th><th>Ім'я</th><th>Email</th><th>Роль</th><th>Дії</th></tr>
+            <#if allUsers??>
                 <#list allUsers as u>
                     <tr>
                         <td>${u.id}</td>
@@ -68,21 +34,83 @@
                         <td>${u.email}</td>
                         <td>${u.role}</td>
                         <td>
-                            <a href="/clinic/users/edit?id=${u.id}" class="btn-action btn-edit">Редагувати</a>
-                            <a href="/clinic/users/delete?id=${u.id}" class="btn-action btn-delete" onclick="return confirm('Ви впевнені?')">Видалити</a>
+                            <a href="${contextPath}/clinic/admin/user?action=edit&id=${u.id}" class="btn btn-warning" style="margin-right: 5px;">Редагувати</a>
+
+                            <form action="${contextPath}/clinic/admin/user" method="post" style="display:inline;">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="id" value="${u.id}">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Ви впевнені, що хочете видалити цього користувача?');">Видалити</button>
+                            </form>
                         </td>
                     </tr>
                 </#list>
-                </tbody>
-            </table>
-        </div>
-    <#else>
-        <div class="card" style="border-left-color: #4caf50;">
-            <h2>Інформація для пацієнта</h2>
-            <p>Тут ви можете побачити свої медичні записи та історію відвідувань. Наразі записів немає.</p>
-        </div>
+            </#if>
+        </table>
     </#if>
-</div>
 
+    <#if loggedUser.role == "DOCTOR">
+        <h3>Мої записи (Пацієнти)</h3>
+        <table>
+            <tr><th>Дата і час</th><th>Пацієнт</th><th>Статус</th><th>Дії</th></tr>
+            <#if appointments?? && appointments?has_content>
+                <#list appointments as a>
+                    <tr>
+                        <td>${a.appointmentDate}</td>
+                        <td>${a.patient.name} (${a.patient.email})</td>
+                        <td><strong>${a.status}</strong></td>
+                        <td>
+                            <form action="${contextPath}/clinic/appointment" method="post" style="display:inline;">
+                                <input type="hidden" name="action" value="updateStatus">
+                                <input type="hidden" name="appointmentId" value="${a.id}">
+                                <#if a.status == "PENDING">
+                                    <button type="submit" name="status" value="CONFIRMED" class="btn">Підтвердити</button>
+                                    <button type="submit" name="status" value="CANCELLED" class="btn btn-danger">Скасувати</button>
+                                <#elseif a.status == "CONFIRMED">
+                                    <button type="submit" name="status" value="COMPLETED" class="btn btn-warning">Завершено</button>
+                                </#if>
+                            </form>
+                        </td>
+                    </tr>
+                </#list>
+            <#else>
+                <tr><td colspan="4">У вас поки немає записів.</td></tr>
+            </#if>
+        </table>
+    </#if>
+
+    <#if loggedUser.role == "PATIENT">
+        <h3>Записатися до лікаря</h3>
+        <form action="${contextPath}/clinic/appointment" method="post" style="background: #e9ecef; padding: 15px; border-radius: 5px;">
+            <input type="hidden" name="action" value="book">
+            <input type="hidden" name="patientId" value="${loggedUser.id}">
+            <label>Оберіть лікаря:</label>
+            <select name="doctorId" required>
+                <#if drHouse??>
+                    <option value="${drHouse.id}">${drHouse.name} (${drHouse.role})</option>
+                </#if>
+            </select>
+            <label>Дата та час:</label>
+            <input type="datetime-local" name="date" required>
+            <button type="submit" class="btn">Забронювати</button>
+        </form>
+
+        <h3 style="margin-top: 30px;">Мої записи</h3>
+        <table>
+            <tr><th>Дата і час</th><th>Лікар</th><th>Статус</th></tr>
+            <#if myAppointments?? && myAppointments?has_content>
+                <#list myAppointments as a>
+                    <tr>
+                        <td>${a.appointmentDate}</td>
+                        <td>${a.doctor.name}</td>
+                        <td><strong>${a.status}</strong></td>
+                    </tr>
+                </#list>
+            <#else>
+                <tr><td colspan="3">Ви ще не записувалися до лікаря.</td></tr>
+            </#if>
+        </table>
+    </#if>
+
+</div>
 </body>
 </html>
