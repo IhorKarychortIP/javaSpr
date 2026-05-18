@@ -13,12 +13,10 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    // Зв'язок: Багато записів можуть належати одному пацієнту
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
     private User patient;
 
-    // Зв'язок: Багато записів можуть бути до одного лікаря
     @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
     private User doctor;
@@ -39,7 +37,6 @@ public class Appointment {
         this.status = Status.PENDING;
     }
 
-    // Геттери та сеттери
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public User getPatient() { return patient; }

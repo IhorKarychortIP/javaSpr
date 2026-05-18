@@ -9,7 +9,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,13 +16,12 @@ import java.util.Map;
 @WebServlet("/clinic/dashboard")
 public class ClinicServlet extends HttpServlet {
     private UserDAO userDAO = new UserDAO();
-    private AppointmentDAO appointmentDAO = new AppointmentDAO(); // DAO для записів
+    private AppointmentDAO appointmentDAO = new AppointmentDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User loggedUser = (User) req.getSession().getAttribute("loggedUser");
+        User loggedUser = (User) req.getAttribute("loggedUser");
         Map<String, Object> data = new HashMap<>();
-
         data.put("contextPath", req.getContextPath());
         data.put("loggedUser", loggedUser);
 
@@ -45,7 +43,6 @@ public class ClinicServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         TemplateEngine.render(req, resp, "dashboard.ftl", data);
     }
 }

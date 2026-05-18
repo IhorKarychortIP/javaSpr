@@ -1,49 +1,38 @@
 package com.examples.controller;
 
-import com.examples.dao.UserDAO;
-import com.examples.model.User;
 import com.examples.util.TemplateEngine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
-    private UserDAO userDAO = new UserDAO();
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Map<String, Object> data = new HashMap<>();
-        data.put("contextPath", req.getContextPath()); // ДОДАНО
-        TemplateEngine.render(req, resp, "login.ftl", data);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String email = req.getParameter("email");
-        String password = req.getParameter("password");
-
-        try {
-            User user = userDAO.authenticate(email, password);
-            if (user != null) {
-                HttpSession session = req.getSession();
-                session.setAttribute("loggedUser", user);
-                resp.sendRedirect(req.getContextPath() + "/clinic/dashboard");
-            } else {
-                Map<String, Object> data = new HashMap<>();
-                data.put("contextPath", req.getContextPath());
-                data.put("error", "Невірний email або пароль!");
-                TemplateEngine.render(req, resp, "login.ftl", data);
+        data.put("contextPath", req.getContextPath());
+        // ЧИТАЄМО ФАЙЛ CONFIG.PROPERTIES
+        Properties props = new Properties();
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+            if (in != null) {
+                props.load(in);
+                data.put("apiKey", props.getProperty("FIREBASE_API_KEY"));
+                data.put("authDomain", props.getProperty("FIREBASE_AUTH_DOMAIN"));
+                data.put("projectId", props.getProperty("FIREBASE_PROJECT_ID"));
+                data.put("storageBucket", props.getProperty("FIREBASE_STORAGE_BUCKET"));
+                data.put("messagingSenderId", props.getProperty("FIREBASE_MESSAGING_SENDER_ID"));
+                data.put("appId", props.getProperty("FIREBASE_APP_ID"));
             }
         } catch (Exception e) {
-            throw new ServletException("Помилка БД", e);
+            e.printStackTrace();
         }
+        TemplateEngine.render(req, resp, "login.ftl", data);
     }
 }

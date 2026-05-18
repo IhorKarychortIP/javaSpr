@@ -3,6 +3,8 @@ package com.examples.controller;
 import com.examples.dao.UserDAO;
 import com.examples.model.User;
 import com.examples.util.TemplateEngine;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.UserRecord;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -19,7 +21,7 @@ public class AdminUserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User loggedUser = (User) req.getSession().getAttribute("loggedUser");
+        User loggedUser = (User) req.getAttribute("loggedUser");
 
         if (loggedUser == null || loggedUser.getRole() != User.Role.ADMIN) {
             resp.sendRedirect(req.getContextPath() + "/clinic/dashboard");
@@ -43,7 +45,8 @@ public class AdminUserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User loggedUser = (User) req.getSession().getAttribute("loggedUser");
+        User loggedUser = (User) req.getAttribute("loggedUser");
+
         if (loggedUser == null || loggedUser.getRole() != User.Role.ADMIN) {
             resp.sendRedirect(req.getContextPath() + "/clinic/dashboard");
             return;
@@ -53,9 +56,22 @@ public class AdminUserServlet extends HttpServlet {
         try {
             if ("delete".equals(action)) {
                 int id = Integer.parseInt(req.getParameter("id"));
-                // Захист від видалення самого себе
+
                 if (id != loggedUser.getId()) {
-                    userDAO.deleteUser(id);
+                    User userToDelete = userDAO.getUserById(id);
+
+                    if (userToDelete != null) {
+                        try {
+                            UserRecord firebaseUser = FirebaseAuth.getInstance().getUserByEmail(userToDelete.getEmail());
+                            FirebaseAuth.getInstance().deleteUser(firebaseUser.getUid());
+                            System.out.println("Користувача видалено з Google Firebase: " + userToDelete.getEmail());
+                        } catch (Exception e) {
+                            System.out.println("У Firebase цього юзера немає, пропускаємо.");
+                        }
+
+                        userDAO.deleteUser(id);
+                        System.out.println("Користувача видалено з MySQL: " + userToDelete.getEmail());
+                    }
                 }
             } else if ("update".equals(action)) {
                 int id = Integer.parseInt(req.getParameter("id"));
